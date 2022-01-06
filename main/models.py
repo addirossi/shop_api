@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
@@ -28,3 +29,25 @@ class ProductImage(models.Model):
                                 related_name='images')
     image = models.ImageField(upload_to='products')
 
+
+RATING_CHOICES = (
+    (1, '1'),
+    (2, '2'),
+    (3, '3'),
+    (4, '4'),
+    (5, '5')
+)
+
+
+class Review(models.Model):
+    product = models.ForeignKey(Product,
+                                on_delete=models.CASCADE,
+                                related_name='reviews')
+    user = models.ForeignKey(get_user_model(),
+                             on_delete=models.CASCADE,
+                             related_name='reviews')
+    text = models.TextField()
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    # rating = models.IntegerField(validators=[MinValueValidator(1),
+    #                                          MaxValueValidator(5)])
+    created_at = models.DateTimeField(auto_now_add=True)

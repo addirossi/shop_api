@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'django_filters',
     'rest_framework',
+    'rest_framework.authtoken',
 
     'account',
     'main',
@@ -135,3 +136,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'account.User'
+
+TWILIO_SID = 'AC2f8ed7f0087bf07364b25c069ef2ae76'
+TWILIO_AUTH_TOKEN = '88af89656a9762edfabec868fcb6e5fb'
+TWILIO_NUMBER = '+12673824952'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}

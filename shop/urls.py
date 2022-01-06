@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from main.views import ProductViewSet, CategoryViewSet
+from main.views import ProductViewSet, CategoryViewSet, CreateReview, UpdateDeleteReview
 
 router = DefaultRouter()
 router.register('products', ProductViewSet, 'products')
@@ -29,6 +29,10 @@ router.register('categories', CategoryViewSet, 'categories')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
+    path('api/v1/', include('account.urls')),
+    path('api/v1/reviews/<int:pk>/', UpdateDeleteReview.as_view())
+    # path('api/v1/reviews/', CreateReview.as_view()),
+
     # path('api/v1/products/', ProductViewSet.as_view(
     #     {'get': 'list',
     #      'post': 'create'}
