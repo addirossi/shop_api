@@ -17,10 +17,23 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 
 from main.views import ProductViewSet, CategoryViewSet, CreateReview, UpdateDeleteReview
 from order.views import OrderViewSet
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title='SpaceP Shop API',
+        description='Our shop',
+        default_version='v1'
+    ),
+    public=True
+)
+
 
 router = DefaultRouter()
 router.register('products', ProductViewSet, 'products')
@@ -30,6 +43,7 @@ router.register('orders', OrderViewSet, 'orders')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/docs/', schema_view.with_ui('swagger')),
     path('api/v1/', include(router.urls)),
     path('api/v1/', include('account.urls')),
     path('api/v1/reviews/<int:pk>/', UpdateDeleteReview.as_view())
