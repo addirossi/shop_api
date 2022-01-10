@@ -34,11 +34,13 @@ class CategorySerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'product', 'text', 'created_at']
+        fields = ['id', 'text', 'rating', 'created_at']
         # exclude = ('user', )
 
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user
+        product = self.context.get('product')
         validated_data['user'] = user
+        validated_data['product'] = product
         return super().create(validated_data)

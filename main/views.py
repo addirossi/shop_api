@@ -1,4 +1,6 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view, action
+from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView, \
     ListCreateAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView
 from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
@@ -7,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from main.filters import ProductFilter
 from main.models import Product, ProductImage, Category, Review
 from main.permissions import IsAuthor
 from main.serializers import ProductListSerializer, ProductSerializer, CategorySerializer, ReviewSerializer
@@ -43,6 +46,10 @@ class RetrieveUpdateDeleteProductView(RetrieveUpdateDestroyAPIView):
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    search_fields = ['name', 'description', 'category__name']
+    filterset_class = ProductFilter
+    # ?search=...
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -51,6 +58,10 @@ class ProductViewSet(ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
+            return []
+        elif self.action == 'reviews':
+            if self.request.method == 'POST':
+                return [IsAuthenticated()]
             return []
         return [IsAdminUser()]
         #создавать, удалять и редактировать продукты
@@ -69,13 +80,15 @@ class ProductViewSet(ModelViewSet):
     #api/v1/products/id/reviews/
     @action(['GET', 'POST'], detail=True)
     def reviews(self, request, pk=None):
+        product = self.get_object()
         if request.method == 'GET':
-            product = self.get_object()
             reviews = product.reviews.all()
             serializer = ReviewSerializer(reviews, many=True)
             return Response(serializer.data)
         data = request.data
-        serializer = ReviewSerializer(data=data)
+        serializer = ReviewSerializer(data=data,
+                                      context={'request': request,
+                                               'product': product})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=201)
@@ -109,3 +122,19 @@ class UpdateDeleteReview(UpdateModelMixin,
 
     def get_serializer_context(self):
         return {'request': self.request}
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+# TODO: скрыть все приватные данные
+# TODO: проверить все эндпоинты
+# TODO: смена и восстановление пароля
+# TODO: документация
+# TODO: деплой
+# TODO: тесты
