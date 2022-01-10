@@ -68,14 +68,14 @@ class ProductViewSet(ModelViewSet):
         #может только администратор, просматривать могут все
 
     def create(self, request, *args, **kwargs):
-        data = request.data
-        images = data.pop('images')
+        data = request.data.copy()
+        images = data.pop('images', [])
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         product = serializer.save()
         for image in images:
             ProductImage.objects.create(product=product, image=image)
-        return Response(serializer.data)
+        return Response(serializer.data, status=201)
 
     #api/v1/products/id/reviews/
     @action(['GET', 'POST'], detail=True)
